@@ -28,6 +28,7 @@ public class ItemService {
         private ItemService(UserService userService) {
             this.userService = userService;
         }
+
         private int getId() {
             return ++id;
         }
@@ -89,7 +90,7 @@ public class ItemService {
                     int itemsNumber = items.size();
                     List<String> itemWords = new ArrayList<>(List.of(item.getName().toLowerCase().split(" ")));
                     itemWords.addAll(List.of(item.getDescription().toLowerCase().split(" ")));
-                    search:{
+                    search: {
                         for (String wordText : words) {
                             for (String wordItem : itemWords) {
                                 if (wordItem.contains(wordText)) {
@@ -118,7 +119,7 @@ public class ItemService {
         }
 
         private void validateNotFoundItem(int itemId) throws NotFoundException {
-          if (itemMap.get(itemId) == null){
+          if (itemMap.get(itemId) == null) {
                throw new NotFoundException("Указанного предмета нет");
           }
         }
