@@ -25,15 +25,15 @@ public class ItemService {
         private int id = 0;
 
         @Autowired
-        private ItemService (UserService userService) {
-            this.userService=userService;
+        private ItemService(UserService userService) {
+            this.userService = userService;
         }
         private int getId() {
             return ++id;
         }
 
 
-        public ItemDto save (ItemDto itemDto, Integer owner) throws ValidationException, NotFoundException {
+        public ItemDto save(ItemDto itemDto, Integer owner) throws ValidationException, NotFoundException {
             validateCreateItem(itemDto, owner);
             Item item = ItemMapper.toItem(itemDto);
             item.setId(getId());
@@ -42,33 +42,33 @@ public class ItemService {
             return ItemMapper.toItemDto(item);
         }
 
-        public String changeItem (ItemDto itemDto, Integer userId, Integer itemId) throws NotFoundException {
+        public String changeItem(ItemDto itemDto, Integer userId, Integer itemId) throws NotFoundException {
             validateUpdateItem(userId, itemId);
             Item changedItem = ItemMapper.toItem(itemDto);
             Item itemBefore = itemMap.get(itemId);
-            if (changedItem.getAvailable() != null){
+            if (changedItem.getAvailable() != null) {
                 itemBefore.setAvailable(changedItem.getAvailable());
             }
-            if (changedItem.getDescription() != null){
+            if (changedItem.getDescription() != null) {
                 itemBefore.setDescription(changedItem.getDescription());
             }
-            if (changedItem.getName() != null){
+            if (changedItem.getName() != null) {
                 itemBefore.setName(changedItem.getName());
             }
             itemMap.put(itemBefore.getId(), itemBefore);
             return gson.toJson(itemBefore);
         }
 
-        public ItemDto getById (Integer id) throws NotFoundException {
+        public ItemDto getById(Integer id) throws NotFoundException {
             validateNotFoundItem(id);
             return ItemMapper.toItemDto(itemMap.get(id));
         }
 
-        public List<ItemDto> getAll () {
+        public List<ItemDto> getAll() {
             return ItemMapper.toListDto(new ArrayList<>(itemMap.values()));
         }
 
-        public List<ItemDto> getAllItemByUser (Integer id) {
+        public List<ItemDto> getAllItemByUser(Integer id) {
             List<Item> userItems = new ArrayList<>();
             for (Item item : itemMap.values()) {
                 if (id == item.getOwner()) {
@@ -78,7 +78,7 @@ public class ItemService {
            return ItemMapper.toListDto(userItems);
         }
 
-        public List<ItemDto> getBySearch (String text) {
+        public List<ItemDto> getBySearch(String text) {
            if (text == null || text.isBlank()) {
                return new ArrayList<>();
            }
@@ -89,8 +89,7 @@ public class ItemService {
                     int itemsNumber = items.size();
                     List<String> itemWords = new ArrayList<>(List.of(item.getName().toLowerCase().split(" ")));
                     itemWords.addAll(List.of(item.getDescription().toLowerCase().split(" ")));
-                    search:
-                    {
+                    search:{
                         for (String wordText : words) {
                             for (String wordItem : itemWords) {
                                 if (wordItem.contains(wordText)) {
@@ -107,7 +106,9 @@ public class ItemService {
             }
             return ItemMapper.toListDto(items);
         }
-        private void validateCreateItem(ItemDto itemDto, Integer ownerId) throws ValidationException, NotFoundException {
+
+        private void validateCreateItem(ItemDto itemDto, Integer ownerId)
+                throws ValidationException, NotFoundException {
             validateNotFoundUser(ownerId);
             if (itemDto.getName() == null || itemDto.getName().isBlank() ||
                itemDto.getDescription() == null || itemDto.getDescription().isBlank() ||
@@ -121,6 +122,7 @@ public class ItemService {
                throw new NotFoundException("Указанного предмета нет");
           }
         }
+
          private void validateCheckUser(int itemId, int userId) throws NotFoundException {
             validateNotFoundItem(itemId);
                 if (itemMap.get(itemId).getOwner() != userId) {

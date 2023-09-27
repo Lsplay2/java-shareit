@@ -14,18 +14,19 @@ public class UserService {
 
     Gson gson = new Gson();
     private int id = 0;
+
     private int getId() {
         return ++id;
     }
 
 
-    public void save (User user) throws ValidationException, DuplicationException {
+    public void save(User user) throws ValidationException, DuplicationException {
         validateCreateUser(user);
         user.setId(getId());
         userMap.put(user.getId(), user);
     }
 
-    public String updateUser (User user, Integer id) throws NotFoundException, DuplicationException {
+    public String updateUser(User user, Integer id) throws NotFoundException, DuplicationException {
         validateUpdateUser(id, user);
         User userBefore = userMap.get(id);
         if (user.getEmail() != null) {
@@ -39,15 +40,15 @@ public class UserService {
         return gson.toJson(userBefore);
     }
 
-    public User getById (Integer id) {
+    public User getById(Integer id) {
         return userMap.get(id);
     }
 
-    public List<User> getAll () {
+    public List<User> getAll() {
         return new ArrayList<>(userMap.values());
     }
 
-    public void delUser (Integer id) {
+    public void delUser(Integer id) {
         userMap.remove(id);
     }
 

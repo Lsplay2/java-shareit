@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ItemMapper {
-    public static ItemDto toItemDto (Item item) {
+    public static ItemDto toItemDto(Item item) {
         return ItemDto.builder()
                 .id(item.getId())
                 .available(item.getAvailable())
@@ -15,7 +15,7 @@ public class ItemMapper {
                 .build();
     }
 
-    public static Item toItem (ItemDto itemDto) {
+    public static Item toItem(ItemDto itemDto) {
         return Item.builder()
                 .id(itemDto.getId())
                 .available(itemDto.getAvailable())
@@ -24,9 +24,9 @@ public class ItemMapper {
                 .build();
     }
 
-    public static List<ItemDto> toListDto (List<Item> items) {
+    public static List<ItemDto> toListDto(List<Item> items) {
         List<ItemDto> itemDtos = new ArrayList<>();
-        for(Item item : items) {
+        for (Item item : items) {
             itemDtos.add(toItemDto(item));
         }
         return itemDtos;

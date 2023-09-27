@@ -11,15 +11,15 @@ import java.util.Map;
 public class ItemRequestService {
     Map<Integer, ItemRequest> itemRequestMap = new HashMap<>();
 
-    public void save (ItemRequest itemRequest) {
+    public void save(ItemRequest itemRequest) {
         itemRequestMap.put(itemRequest.getId(), itemRequest);
     }
 
-    public ItemRequest getById (Integer id) {
+    public ItemRequest getById(Integer id) {
         return itemRequestMap.get(id);
     }
 
-    public List<ItemRequest> getAll () {
+    public List<ItemRequest> getAll() {
         return new ArrayList<>(itemRequestMap.values());
     }
 

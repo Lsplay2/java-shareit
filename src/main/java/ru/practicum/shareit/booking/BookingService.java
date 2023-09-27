@@ -11,15 +11,15 @@ import java.util.Map;
 public class BookingService {
     Map<Integer, Booking> bookingMap = new HashMap<>();
 
-    public void save (Booking booking) {
+    public void save(Booking booking) {
         bookingMap.put(booking.getId(), booking);
     }
 
-    public Booking getById (Integer id) {
+    public Booking getById(Integer id) {
         return bookingMap.get(id);
     }
 
-    public List<Booking> getAll () {
+    public List<Booking> getAll() {
         return new ArrayList<>(bookingMap.values());
     }
 
