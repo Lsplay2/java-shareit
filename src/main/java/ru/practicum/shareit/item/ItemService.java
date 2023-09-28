@@ -14,7 +14,7 @@ import com.google.gson.Gson;
 import ru.practicum.shareit.user.UserDao;
 
 @Service
-public class ItemService implements ItemServiceInter{
+public class ItemService implements ItemServiceInter {
 
         private UserDao userDao;
         private ItemDao itemDao;

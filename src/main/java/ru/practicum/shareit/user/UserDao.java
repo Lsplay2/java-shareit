@@ -15,7 +15,7 @@ public class UserDao {
         return userMap.get(id);
     }
 
-    public void save (int id, User user) {
+    public void save(int id, User user) {
         userMap.put(id, user);
     }
 

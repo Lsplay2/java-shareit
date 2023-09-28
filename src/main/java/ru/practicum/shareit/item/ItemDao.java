@@ -17,7 +17,7 @@ public class ItemDao {
         return itemMap.get(id);
     }
 
-    public void save (Item item) {
+    public void save(Item item) {
         itemMap.put(item.getId(), item);
     }
 
