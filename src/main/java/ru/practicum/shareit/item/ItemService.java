@@ -9,24 +9,23 @@ import ru.practicum.shareit.item.dto.ItemMapper;
 import ru.practicum.shareit.item.model.Item;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import com.google.gson.Gson;
-import ru.practicum.shareit.user.UserService;
+import ru.practicum.shareit.user.UserDao;
 
 @Service
-public class ItemService {
+public class ItemService implements ItemServiceInter{
 
-        UserService userService;
-        Map<Integer, Item> itemMap = new HashMap<>();
-        ItemMapper itemMapper = new ItemMapper();
+        private UserDao userDao;
+        private ItemDao itemDao;
+        private ItemMapper itemMapper = new ItemMapper();
         Gson gson = new Gson();
         private int id = 0;
 
         @Autowired
-        private ItemService(UserService userService) {
-            this.userService = userService;
+        private ItemService(UserDao userDao, ItemDao itemDao) {
+            this.userDao = userDao;
+            this.itemDao = itemDao;
         }
 
         private int getId() {
@@ -39,14 +38,14 @@ public class ItemService {
             Item item = ItemMapper.toItem(itemDto);
             item.setId(getId());
             item.setOwner(owner);
-            itemMap.put(item.getId(), item);
+            itemDao.save(item);
             return ItemMapper.toItemDto(item);
         }
 
         public String changeItem(ItemDto itemDto, Integer userId, Integer itemId) throws NotFoundException {
             validateUpdateItem(userId, itemId);
             Item changedItem = ItemMapper.toItem(itemDto);
-            Item itemBefore = itemMap.get(itemId);
+            Item itemBefore = itemDao.getById(itemId);
             if (changedItem.getAvailable() != null) {
                 itemBefore.setAvailable(changedItem.getAvailable());
             }
@@ -56,22 +55,22 @@ public class ItemService {
             if (changedItem.getName() != null) {
                 itemBefore.setName(changedItem.getName());
             }
-            itemMap.put(itemBefore.getId(), itemBefore);
+            itemDao.save(itemBefore);
             return gson.toJson(itemBefore);
         }
 
         public ItemDto getById(Integer id) throws NotFoundException {
             validateNotFoundItem(id);
-            return ItemMapper.toItemDto(itemMap.get(id));
+            return ItemMapper.toItemDto(itemDao.getById(id));
         }
 
         public List<ItemDto> getAll() {
-            return ItemMapper.toListDto(new ArrayList<>(itemMap.values()));
+            return ItemMapper.toListDto(itemDao.getValues());
         }
 
         public List<ItemDto> getAllItemByUser(Integer id) {
             List<Item> userItems = new ArrayList<>();
-            for (Item item : itemMap.values()) {
+            for (Item item : itemDao.getValues()) {
                 if (id == item.getOwner()) {
                     userItems.add(item);
                 }
@@ -85,7 +84,7 @@ public class ItemService {
            }
             List<Item> items = new ArrayList<>();
             List<String> words = new ArrayList<>(List.of(text.toLowerCase().split(" ")));
-            for (Item item : itemMap.values()) {
+            for (Item item : itemDao.getValues()) {
                 if (item.getAvailable()) {
                     int itemsNumber = items.size();
                     List<String> itemWords = new ArrayList<>(List.of(item.getName().toLowerCase().split(" ")));
@@ -119,16 +118,16 @@ public class ItemService {
         }
 
         private void validateNotFoundItem(int itemId) throws NotFoundException {
-          if (itemMap.get(itemId) == null) {
+          if (itemDao.getById(itemId) == null) {
                throw new NotFoundException("Указанного предмета нет");
           }
         }
 
          private void validateCheckUser(int itemId, int userId) throws NotFoundException {
             validateNotFoundItem(itemId);
-                if (itemMap.get(itemId).getOwner() != userId) {
-                   throw new NotFoundException("Указан не верный пользователь");
-                 }
+            if (itemDao.getById(itemId).getOwner() != userId) {
+                throw new NotFoundException("Указан не верный пользователь");
+            }
          }
 
          private void validateUpdateItem(int userId, int itemId)
@@ -137,7 +136,7 @@ public class ItemService {
          }
 
           private void validateNotFoundUser(int userId) throws NotFoundException {
-                if (userService.userMap.get(userId) == null) {
+                if (userDao.getById(userId) == null) {
                     throw  new NotFoundException("Пользователь не найден");
                 }
           }

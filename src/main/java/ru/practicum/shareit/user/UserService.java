@@ -1,6 +1,7 @@
 package ru.practicum.shareit.user;
 
 import com.google.gson.Gson;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exception.DuplicationException;
 import ru.practicum.shareit.exception.NotFoundException;
@@ -10,10 +11,14 @@ import java.util.*;
 
 @Service
 public class UserService {
-    public Map<Integer, User> userMap = new HashMap<>();
-
-    Gson gson = new Gson();
+    private UserDao userDao;
+    private Gson gson = new Gson();
     private int id = 0;
+
+    @Autowired
+    private UserService(UserDao userDao) {
+        this.userDao = userDao;
+    }
 
     private int getId() {
         return ++id;
@@ -23,33 +28,33 @@ public class UserService {
     public void save(User user) throws ValidationException, DuplicationException {
         validateCreateUser(user);
         user.setId(getId());
-        userMap.put(user.getId(), user);
+        userDao.save(user.getId(), user);
     }
 
     public String updateUser(User user, Integer id) throws NotFoundException, DuplicationException {
         validateUpdateUser(id, user);
-        User userBefore = userMap.get(id);
+        User userBefore = userDao.getById(id);
         if (user.getEmail() != null) {
             userBefore.setEmail(user.getEmail());
         }
         if (user.getName() != null) {
             userBefore.setName(user.getName());
         }
-        userMap.put(id, userBefore);
+        userDao.save(id, userBefore);
         System.out.println(userBefore);
         return gson.toJson(userBefore);
     }
 
     public User getById(Integer id) {
-        return userMap.get(id);
+        return userDao.getById(id);
     }
 
     public List<User> getAll() {
-        return new ArrayList<>(userMap.values());
+        return userDao.getValues();
     }
 
     public void delUser(Integer id) {
-        userMap.remove(id);
+        userDao.delete(id);
     }
 
     private void validateCreateUser(User user) throws ValidationException, DuplicationException {
@@ -61,17 +66,17 @@ public class UserService {
     }
 
     private void validateUpdateUser(Integer id, User user) throws NotFoundException, DuplicationException {
-        if (userMap.get(id) == null) {
+        if (userDao.getById(id) == null) {
             throw new NotFoundException("Пользователь не найден");
         }
-        if (user.getEmail() != null && !Objects.equals(userMap.get(id).getEmail(), user.getEmail())) {
+        if (user.getEmail() != null && !Objects.equals(userDao.getById(id).getEmail(), user.getEmail())) {
             checkDuplicateEmail(user.getEmail());
         }
     }
 
 
     private void checkDuplicateEmail(String email) throws DuplicationException {
-        for (User users : userMap.values()) {
+        for (User users : userDao.getValues()) {
             if (users.getEmail().equals(email)) {
                 throw new DuplicationException("Email уже существует");
             }
