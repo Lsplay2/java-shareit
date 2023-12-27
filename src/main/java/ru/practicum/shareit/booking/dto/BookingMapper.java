@@ -18,7 +18,7 @@ public class BookingMapper {
      ItemRepository itemRepository;
 
     @Autowired
-    private BookingMapper (ItemRepository itemRepository, UserRepository userRepository){
+    private BookingMapper(ItemRepository itemRepository, UserRepository userRepository) {
         this.itemRepository = itemRepository;
         this.userRepository = userRepository;
     }

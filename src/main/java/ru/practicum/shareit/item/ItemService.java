@@ -167,7 +167,8 @@ public class ItemService implements ItemServiceInter {
             if (itemDto.getNextBooking() == null) {
                 if (booking.getStart().isAfter(testTime)) {
                     itemDto.setNextBooking(booking);
-                }}
+                }
+            }
             else {
                 if (booking.getStart().isAfter(LocalDateTime.now())
                         && booking.getStart().isBefore(itemDto.getNextBooking().getStart())) {
@@ -188,6 +189,7 @@ public class ItemService implements ItemServiceInter {
         }
         return itemDto;
     }
+
         private void validateCreateItem(ItemDto itemDto, Long ownerId)
                 throws ValidationException, NotFoundException {
             validateNotFoundUser(ownerId);

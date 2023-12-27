@@ -27,7 +27,7 @@ public class BookingService {
 
 
     @Autowired
-    private BookingService (BookingRepository bookingRepository,
+    private BookingService(BookingRepository bookingRepository,
                             BookingMapper bookingMapper,
                             ItemService itemService,
                             UserRepository userRepository,
@@ -54,10 +54,10 @@ public class BookingService {
         return bookingMapper.toBookingDtoForCreate(bookingRepository.findFirstByOrderByIdDesc());
     }
 
-    public BookingDtoForCreate checkStatus(Long id, Boolean approve,Long user_id) throws NotFoundException, ValidationException {
+    public BookingDtoForCreate checkStatus(Long id, Boolean approve,Long userId) throws NotFoundException, ValidationException {
         Booking booking = bookingRepository.findBookingById(id);
 
-        if (booking.getItem().getUserId() != user_id) {
+        if (booking.getItem().getUserId() != userId) {
             throw new NotFoundException("Not found");
         }
         if (booking.getStatus().equals(Status.APPROVED.toString())) {
@@ -89,7 +89,7 @@ public class BookingService {
 
     public List<BookingDtoForCreate> getAllByUser(Long userId, String state) throws NotFoundException, StatusException {
         validateNotFoundUser(userId);
-        if (state== null || state.isBlank()) {
+        if (state == null || state.isBlank()) {
             state = "ALL";
         }
         validateWrongState(state);
@@ -98,9 +98,11 @@ public class BookingService {
         } else {
             if (state.equals("FUTURE")) {
                 return bookingMapper.toDtoForCreateList(bookingRepository.findByUserIdAndStartIsAfterOrderByStartDesc(userId, LocalDateTime.now()));
-            } if (state.equals("PAST")) {
+            }
+            if (state.equals("PAST")) {
                 return bookingMapper.toDtoForCreateList(bookingRepository.findByUserIdAndEndIsBeforeOrderByStartDesc(userId, LocalDateTime.now()));
-            } if (state.equals("CURRENT")) {
+            }
+            if (state.equals("CURRENT")) {
                 List<Booking> bookingsTest = bookingRepository.findBookingWithDateBetweenNowByUserId(LocalDateTime.now());
                 List<Booking> currentBookings = new ArrayList<>();
                 for (Booking booking: bookingsTest) {
@@ -117,7 +119,7 @@ public class BookingService {
 
     public List<BookingDtoForCreate> getAllBookingForUserItems(Long userId, String state) throws NotFoundException, StatusException {
         validateNotFoundUser(userId);
-        if (state== null || state.isBlank()) {
+        if (state == null || state.isBlank()) {
             state = "ALL";
         }
         validateWrongState(state);
@@ -129,10 +131,12 @@ public class BookingService {
             } else {
                 if (state.equals("FUTURE")) {
                     bookings.addAll(bookingRepository.findByItemIdAndStartIsAfterOrderByStartDesc(itemDto.getId(), LocalDateTime.now()));
-                } if (state.equals("PAST")) {
+                }
+                if (state.equals("PAST")) {
                     bookings.addAll(bookingRepository.findByItemIdAndEndIsBeforeOrderByStartDesc(itemDto.getId(), LocalDateTime.now()));
-                } if (state.equals("CURRENT")) {
-                    List<Booking> bookingsTest = bookingRepository.findBookingWithDateBetweenNowByItemId( LocalDateTime.now());
+                }
+                if (state.equals("CURRENT")) {
+                    List<Booking> bookingsTest = bookingRepository.findBookingWithDateBetweenNowByItemId(LocalDateTime.now());
                     for (Booking booking: bookingsTest) {
                         if (Objects.equals(booking.getItem().getId(), itemDto.getId())) {
                             bookings.add(booking);
@@ -145,8 +149,8 @@ public class BookingService {
         return bookingMapper.toDtoForCreateList(bookings);
     }
 
-    private void validateCreateBooking(Long userId, Long itemId, LocalDateTime start
-            , LocalDateTime end) throws NotFoundException, ValidationException {
+    private void validateCreateBooking(Long userId, Long itemId, LocalDateTime start,
+                                       LocalDateTime end) throws NotFoundException, ValidationException {
         validateNotFoundUser(userId);
         validateNotFoundItem(itemId);
         validateDate(start, end);
