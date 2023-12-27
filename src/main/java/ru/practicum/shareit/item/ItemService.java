@@ -2,80 +2,117 @@ package ru.practicum.shareit.item;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import ru.practicum.shareit.booking.Booking;
+import ru.practicum.shareit.booking.BookingRepository;
+import ru.practicum.shareit.booking.dto.BookingDto;
+import ru.practicum.shareit.booking.dto.BookingMapper;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.exception.ValidationException;
+import ru.practicum.shareit.item.comments.Comment;
+import ru.practicum.shareit.item.comments.CommentRepository;
+import ru.practicum.shareit.item.dto.CommentDto;
+import ru.practicum.shareit.item.dto.CommentMapper;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemMapper;
-import ru.practicum.shareit.item.model.Item;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+
 import com.google.gson.Gson;
-import ru.practicum.shareit.user.UserDao;
+import ru.practicum.shareit.user.UserRepository;
 
 @Service
 public class ItemService implements ItemServiceInter {
-
-        private UserDao userDao;
-        private ItemDao itemDao;
-        private ItemMapper itemMapper = new ItemMapper();
+        private ItemRepository itemRepository;
+        private UserRepository userRepository;
+        private BookingRepository bookingRepository;
+        private CommentRepository commentRepository;
+        private BookingMapper bookingMapper;
         Gson gson = new Gson();
-        private int id = 0;
 
         @Autowired
-        private ItemService(UserDao userDao, ItemDao itemDao) {
-            this.userDao = userDao;
-            this.itemDao = itemDao;
+        private ItemService(UserRepository userRepository,
+                            ItemRepository itemRepository,
+                            BookingRepository bookingRepository,
+                            CommentRepository commentRepository,
+                            BookingMapper bookingMapper) {
+            this.userRepository = userRepository;
+            this.itemRepository = itemRepository;
+            this.bookingRepository = bookingRepository;
+            this.commentRepository = commentRepository;
+            this.bookingMapper = bookingMapper;
         }
 
-        private int getId() {
-            return ++id;
-        }
-
-
-        public ItemDto save(ItemDto itemDto, Integer owner) throws ValidationException, NotFoundException {
+        public ItemDto save(ItemDto itemDto, Long owner) throws ValidationException, NotFoundException {
             validateCreateItem(itemDto, owner);
             Item item = ItemMapper.toItem(itemDto);
-            item.setId(getId());
-            item.setOwner(owner);
-            itemDao.save(item);
+            item.setUserId(owner);
+
+            itemRepository.save(item);
             return ItemMapper.toItemDto(item);
         }
 
-        public String changeItem(ItemDto itemDto, Integer userId, Integer itemId) throws NotFoundException {
+        public ItemDto changeItem(ItemDto itemDto, Long userId, Long itemId) throws NotFoundException {
             validateUpdateItem(userId, itemId);
             Item changedItem = ItemMapper.toItem(itemDto);
-            Item itemBefore = itemDao.getById(itemId);
-            if (changedItem.getAvailable() != null) {
-                itemBefore.setAvailable(changedItem.getAvailable());
-            }
-            if (changedItem.getDescription() != null) {
-                itemBefore.setDescription(changedItem.getDescription());
-            }
-            if (changedItem.getName() != null) {
-                itemBefore.setName(changedItem.getName());
-            }
-            itemDao.save(itemBefore);
-            return gson.toJson(itemBefore);
-        }
+            Item itemBefore = itemRepository.getById(itemId);
+                if (changedItem.getAvailable() != null) {
+                    itemBefore.setAvailable(changedItem.getAvailable());
+                }
+                if (changedItem.getDescription() != null) {
+                    itemBefore.setDescription(changedItem.getDescription());
+                }
+                 if (changedItem.getName() != null) {
+                    itemBefore.setName(changedItem.getName());
+                 }
 
-        public ItemDto getById(Integer id) throws NotFoundException {
+             itemRepository.save(itemBefore);
+        return ItemMapper.toItemDto(itemBefore);
+    }
+
+        public ItemDto getById(Long id, Long userId) throws NotFoundException {
             validateNotFoundItem(id);
-            return ItemMapper.toItemDto(itemDao.getById(id));
+            ItemDto itemDto = ItemMapper.toItemDto(itemRepository.getById(id));
+
+            if (commentRepository.existsByItemId(itemDto.getId())) {
+                itemDto.setComments(CommentMapper.toListCommentDto(commentRepository.findByItemId(itemDto.getId())));
+            } else  {
+                itemDto.setComments(null);
+            }
+
+            if (bookingRepository.existsByItemId(itemDto.getId())) {
+                if (Objects.equals(itemRepository.getById(id).getUserId(), userId)) {
+                    itemDto = findIndexes(bookingRepository.findByItemIdOrderByStartDesc(itemDto.getId()), itemDto);
+                }
+            }
+            return itemDto;
         }
 
         public List<ItemDto> getAll() {
-            return ItemMapper.toListDto(itemDao.getValues());
+            return ItemMapper.toListDto(itemRepository.findAll());
         }
 
-        public List<ItemDto> getAllItemByUser(Integer id) {
+        public List<ItemDto> getAllItemByUser(Long id) {
             List<Item> userItems = new ArrayList<>();
-            for (Item item : itemDao.getValues()) {
-                if (id == item.getOwner()) {
+            for (Item item : itemRepository.findAllByOrderByIdAsc()) {
+                if (Objects.equals(id, item.getUserId())) {
                     userItems.add(item);
                 }
             }
-           return ItemMapper.toListDto(userItems);
+            List<ItemDto> itemDtos = ItemMapper.toListDto(userItems);
+            for (ItemDto itemDto : itemDtos) {
+                if (bookingRepository.existsByItemId(itemDto.getId())) {
+                    itemDto = findIndexes(bookingRepository.findByItemIdOrderByStartDesc(itemDto.getId()), itemDto);
+                }
+                if (commentRepository.existsByItemId(itemDto.getId())) {
+                    itemDto.setComments(CommentMapper.toListCommentDto(commentRepository.findByItemId(itemDto.getId())));
+                } else {
+                    itemDto.setComments(null);
+                }
+            }
+           return itemDtos;
         }
 
         public List<ItemDto> getBySearch(String text) {
@@ -84,7 +121,7 @@ public class ItemService implements ItemServiceInter {
            }
             List<Item> items = new ArrayList<>();
             List<String> words = new ArrayList<>(List.of(text.toLowerCase().split(" ")));
-            for (Item item : itemDao.getValues()) {
+            for (Item item : itemRepository.findAll()) {
                 if (item.getAvailable()) {
                     int itemsNumber = items.size();
                     List<String> itemWords = new ArrayList<>(List.of(item.getName().toLowerCase().split(" ")));
@@ -107,7 +144,51 @@ public class ItemService implements ItemServiceInter {
             return ItemMapper.toListDto(items);
         }
 
-        private void validateCreateItem(ItemDto itemDto, Integer ownerId)
+        //Comments
+        public CommentDto addComment(Comment comment, Long itemId, Long userId) throws NotFoundException, ValidationException {
+            validateNotBookingForUser(itemId, userId);
+            validateNullComment(comment.getText());
+            validateFutureComment(itemId, userId);
+            comment.setCreated(LocalDateTime.now());
+            comment.setUser(userRepository.getUserById(userId));
+            comment.setItem(itemRepository.getById(itemId));
+            commentRepository.save(comment);
+            return CommentMapper.toCommentDto(comment);
+        }
+
+        public List<CommentDto> getAllComments(Long itemId, Long userId) {
+            return CommentMapper.toListCommentDto(commentRepository.findByItemId(itemId));
+        }
+
+    private ItemDto findIndexes(List<Booking> bookings, ItemDto itemDto) {
+        List<BookingDto> bookingDtos = bookingMapper.toDtoList(bookings);
+        LocalDateTime testTime = LocalDateTime.now();
+        for (BookingDto booking : bookingDtos) {
+            if (itemDto.getNextBooking() == null) {
+                if (booking.getStart().isAfter(testTime)) {
+                    itemDto.setNextBooking(booking);
+                }}
+            else {
+                if (booking.getStart().isAfter(LocalDateTime.now())
+                        && booking.getStart().isBefore(itemDto.getNextBooking().getStart())) {
+                    itemDto.setNextBooking(booking);
+                }
+            }
+
+            if (itemDto.getLastBooking() == null) {
+                if (booking.getEnd().isBefore(testTime)) {
+                   itemDto.setLastBooking(booking);
+                }
+            } else {
+                if (booking.getEnd().isBefore(testTime)
+                        && booking.getEnd().isAfter(itemDto.getLastBooking().getEnd())) {
+                    itemDto.setLastBooking(booking);
+                }
+            }
+        }
+        return itemDto;
+    }
+        private void validateCreateItem(ItemDto itemDto, Long ownerId)
                 throws ValidationException, NotFoundException {
             validateNotFoundUser(ownerId);
             if (itemDto.getName() == null || itemDto.getName().isBlank() ||
@@ -117,28 +198,48 @@ public class ItemService implements ItemServiceInter {
             }
         }
 
-        private void validateNotFoundItem(int itemId) throws NotFoundException {
-          if (itemDao.getById(itemId) == null) {
+        private void validateNotBookingForUser(Long itemId, Long userId) throws NotFoundException {
+            if (!bookingRepository.existsByItemIdAndUserId(itemId, userId)) {
+                throw new NotFoundException("Пользователь не арендовал вешь");
+            }
+        }
+
+        private void validateNotFoundItem(Long itemId) throws NotFoundException {
+          if (!itemRepository.existsById(itemId)) {
                throw new NotFoundException("Указанного предмета нет");
           }
         }
 
-         private void validateCheckUser(int itemId, int userId) throws NotFoundException {
+         private void validateCheckUser(Long itemId, Long userId) throws NotFoundException {
             validateNotFoundItem(itemId);
-            if (itemDao.getById(itemId).getOwner() != userId) {
+            if (!Objects.equals(itemRepository.getById(itemId).getUserId(), userId)) {
                 throw new NotFoundException("Указан не верный пользователь");
             }
          }
 
-         private void validateUpdateItem(int userId, int itemId)
+         private void validateUpdateItem(Long userId, Long itemId)
                 throws NotFoundException {
             validateCheckUser(itemId,userId);
          }
 
-          private void validateNotFoundUser(int userId) throws NotFoundException {
-                if (userDao.getById(userId) == null) {
+          private void validateNotFoundUser(Long userId) throws NotFoundException {
+                if (!userRepository.existsById(userId)) {
                     throw  new NotFoundException("Пользователь не найден");
                 }
+          }
+
+          private void validateNullComment(String comment) throws ValidationException {
+            if (comment == null || comment.isBlank()) {
+                throw new ValidationException("Комментарий пуст");
+            }
+          }
+
+          private void validateFutureComment(Long itemId, Long userId) throws ValidationException {
+
+              if (bookingRepository.findByItemIdAndUserIdOrderByStartAsc(itemId, userId).get(0).getStart().isAfter(LocalDateTime.now())) {
+                  throw new ValidationException("Вы еще не опробовали предмет");
+              }
+
           }
 
 }
