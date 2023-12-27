@@ -168,8 +168,7 @@ public class ItemService implements ItemServiceInter {
                 if (booking.getStart().isAfter(testTime)) {
                     itemDto.setNextBooking(booking);
                 }
-            }
-            else {
+            } else {
                 if (booking.getStart().isAfter(LocalDateTime.now())
                         && booking.getStart().isBefore(itemDto.getNextBooking().getStart())) {
                     itemDto.setNextBooking(booking);
