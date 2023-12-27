@@ -21,11 +21,10 @@ public class PersistenceConfig {
         @Bean
         public DataSource dataSource() {
             DataSourceBuilder dataSource = DataSourceBuilder.create();
-            dataSource.url("jdbc:postgresql://localhost:5432/share_it");
-            dataSource.username("share_it_spring");
-            dataSource.password("123");
-            dataSource.driverClassName("org.postgresql.Driver");
-            //EmbeddedDatabaseBuilder builder = new EmbeddedDatabaseBuilder();
+            dataSource.url("jdbc:h2:mem:shareit");
+            dataSource.username("test");
+            dataSource.password("test");
+            dataSource.driverClassName("org.h2.Driver");
             return dataSource.build();
         }
 
