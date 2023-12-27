@@ -12,7 +12,7 @@ import java.util.Map;
 public class ItemDao {
     private Map<Long, Item> itemMap = new HashMap<>();
 
-    public Item getById(int id) {
+    public Item getById(Long id) {
         return itemMap.get(id);
     }
 

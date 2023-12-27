@@ -46,7 +46,7 @@ public class BookingService {
             throw new ValidationException("Unavailable item");
         }
         Booking booking = bookingMapper.toBooking(bookingDto);
-        if (booking.getUser().getId() == booking.getItem().getUserId()) {
+        if (Objects.equals(booking.getUser().getId(), booking.getItem().getUserId())) {
             throw new NotFoundException("It's your item");
         }
         booking.setStatus(Status.WAITING.toString());
@@ -57,7 +57,7 @@ public class BookingService {
     public BookingDtoForCreate checkStatus(Long id, Boolean approve,Long userId) throws NotFoundException, ValidationException {
         Booking booking = bookingRepository.findBookingById(id);
 
-        if (booking.getItem().getUserId() != userId) {
+        if (!Objects.equals(booking.getItem().getUserId(), userId)) {
             throw new NotFoundException("Not found");
         }
         if (booking.getStatus().equals(Status.APPROVED.toString())) {
@@ -77,7 +77,7 @@ public class BookingService {
         validateNotFoundBooking(id);
         validateNotFoundUser(userId);
         Booking bookingForFind = bookingRepository.findBookingById(id);
-        if (bookingForFind.getUser().getId() == userId || bookingForFind.getItem().getUserId() == userId) {
+        if (Objects.equals(bookingForFind.getUser().getId(), userId) || Objects.equals(bookingForFind.getItem().getUserId(), userId)) {
             return bookingMapper.toBookingDtoForCreate(bookingRepository.findBookingById(id));
         }
         throw new NotFoundException("Not found");
