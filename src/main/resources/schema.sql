@@ -1,8 +1,5 @@
 
-DROP TABLE users CASCADE ;
-DROP TABLE items CASCADE;
-DROP TABLE booking CASCADE;
-DROP TABLE comments CASCADE;
+
 
 ---Users table
 CREATE TABLE IF NOT EXISTS users (
