@@ -29,7 +29,7 @@ public class UserController {
     }
 
     @GetMapping(value = "/{id}")
-    public User getUserById(@PathVariable int id) {
+    public User getUserById(@PathVariable Long id) throws NotFoundException {
         log.info("Поступил запрос на получение пользователей по id:" + id);
         return userService.getById(id);
     }
@@ -43,14 +43,14 @@ public class UserController {
     }
 
     @PatchMapping (value = "/{id}")
-    public String updateUser(@RequestBody User user, @PathVariable("id") Integer userId)
-            throws NotFoundException, DuplicationException {
+    public String updateUser(@RequestBody User user, @PathVariable("id") Long userId)
+            throws NotFoundException, ValidationException, DuplicationException {
         log.info("Поступил запрос на обновление пользователя:" + user);
         return userService.updateUser(user,userId);
     }
 
     @DeleteMapping(value = "/{id}")
-    public void delUser(@PathVariable int id) {
+    public void delUser(@PathVariable Long id) {
         log.info("Поступил запрос на удаление пользователя:" + id);
         userService.delUser(id);
         log.info("Пользователь удален. Текущее число пользователей:" + userService.getAll().size());

@@ -9,13 +9,13 @@ import java.util.Map;
 
 @Component
 public class UserDao {
-    private Map<Integer, User> userMap = new HashMap<>();
+    private Map<Long, User> userMap = new HashMap<>();
 
-    public User getById(int id) {
+    public User getById(Long id) {
         return userMap.get(id);
     }
 
-    public void save(int id, User user) {
+    public void save(Long id, User user) {
         userMap.put(id, user);
     }
 
@@ -23,7 +23,7 @@ public class UserDao {
         return new ArrayList<>(userMap.values());
     }
 
-    public void delete(int id) {
+    public void delete(Long id) {
         userMap.remove(id);
     }
 }
