@@ -199,12 +199,12 @@ public class ItemService implements ItemServiceInter {
 
         private void validateCreateItem(ItemDto itemDto, Long ownerId)
                 throws ValidationException, NotFoundException {
-            validateNotFoundUser(ownerId);
             if (itemDto.getName() == null || itemDto.getName().isBlank() ||
                itemDto.getDescription() == null || itemDto.getDescription().isBlank() ||
                itemDto.getAvailable() == null) {
-                throw new NotFoundException("Указаны не все данные");
+                throw new ValidationException("Указаны не все данные");
             }
+            validateNotFoundUser(ownerId);
         }
 
         private void validateNotBookingForUser(Long itemId, Long userId) throws NotFoundException {
