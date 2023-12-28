@@ -203,7 +203,7 @@ public class ItemService implements ItemServiceInter {
             if (itemDto.getName() == null || itemDto.getName().isBlank() ||
                itemDto.getDescription() == null || itemDto.getDescription().isBlank() ||
                itemDto.getAvailable() == null) {
-                throw new ValidationException("Указаны не все данные");
+                throw new NotFoundException("Указаны не все данные");
             }
         }
 
