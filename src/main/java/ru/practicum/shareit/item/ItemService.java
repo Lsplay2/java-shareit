@@ -79,7 +79,7 @@ public class ItemService implements ItemServiceInter {
             if (commentRepository.existsByItemId(itemDto.getId())) {
                 itemDto.setComments(CommentMapper.toListCommentDto(commentRepository.findByItemId(itemDto.getId())));
             } else  {
-                itemDto.setComments(null);
+                itemDto.setComments(new ArrayList<>());
             }
 
             if (bookingRepository.existsByItemId(itemDto.getId())) {
@@ -109,7 +109,7 @@ public class ItemService implements ItemServiceInter {
                 if (commentRepository.existsByItemId(itemDto.getId())) {
                     itemDto.setComments(CommentMapper.toListCommentDto(commentRepository.findByItemId(itemDto.getId())));
                 } else {
-                    itemDto.setComments(null);
+                    itemDto.setComments(new ArrayList<>());
                 }
             }
            return itemDtos;
@@ -166,23 +166,31 @@ public class ItemService implements ItemServiceInter {
         for (BookingDto booking : bookingDtos) {
             if (itemDto.getNextBooking() == null) {
                 if (booking.getStart().isAfter(testTime)) {
-                    itemDto.setNextBooking(booking);
+                    if(booking.getEnd().isAfter(LocalDateTime.now())){
+                        itemDto.setNextBooking(booking);
+                    }
                 }
             } else {
                 if (booking.getStart().isAfter(LocalDateTime.now())
                         && booking.getStart().isBefore(itemDto.getNextBooking().getStart())) {
-                    itemDto.setNextBooking(booking);
+                    if(booking.getEnd().isAfter(LocalDateTime.now())){
+                        itemDto.setNextBooking(booking);
+                    }
                 }
             }
 
             if (itemDto.getLastBooking() == null) {
                 if (booking.getEnd().isBefore(testTime)) {
-                   itemDto.setLastBooking(booking);
+                    if(booking.getStart().isBefore(LocalDateTime.now())){
+                        itemDto.setLastBooking(booking);
+                    }
                 }
             } else {
                 if (booking.getEnd().isBefore(testTime)
                         && booking.getEnd().isAfter(itemDto.getLastBooking().getEnd())) {
-                    itemDto.setLastBooking(booking);
+                    if(booking.getStart().isBefore(LocalDateTime.now())){
+                        itemDto.setLastBooking(booking);
+                    }
                 }
             }
         }

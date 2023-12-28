@@ -1,5 +1,7 @@
 package ru.practicum.shareit.exception;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -18,8 +20,8 @@ public class ExceptionController {
 
     @ExceptionHandler(StatusException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ResponseEntity<String> handleStatus(StatusException e) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+    public Map<String, String> handleStatus(StatusException e) {
+        return Map.of("error", e.getMessage());
     }
 
     @ExceptionHandler(NotFoundException.class)
