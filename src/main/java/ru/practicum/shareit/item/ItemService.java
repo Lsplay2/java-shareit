@@ -164,9 +164,7 @@ public class ItemService implements ItemServiceInter {
         List<BookingDto> bookingDtos = bookingMapper.toDtoList(bookings);
         LocalDateTime testTime = LocalDateTime.now();
         for (BookingDto booking : bookingDtos) {
-            if (booking.getStatus() != null && !booking.getStatus().isBlank() && booking.getStatus().equals("REJECTED")) {
-
-            } else {
+            if (booking.getStatus() == null || booking.getStatus().isBlank() || !booking.getStatus().equals("REJECTED")) {
                 if (itemDto.getNextBooking() == null) {
                     if (booking.getStart().isAfter(testTime)) {
                         if (booking.getEnd().isAfter(LocalDateTime.now())) {
