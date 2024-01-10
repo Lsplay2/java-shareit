@@ -25,36 +25,38 @@ public class BookingController {
     }
 
     @PostMapping()
-    public BookingDtoForCreate addNewBooking(@RequestBody BookingDto booking, @RequestHeader(value = "X-Sharer-User-Id") Long id
-                                    ) throws ValidationException, NotFoundException {
+    public BookingDtoForCreate addNewBooking(@RequestBody BookingDto booking,
+                                             @RequestHeader(value = "X-Sharer-User-Id") Long id)
+            throws ValidationException, NotFoundException {
         booking.setBookerId(id);
         return  bookingService.save(booking);
     }
 
     @PatchMapping(value = "/{itemId}")
-    public BookingDtoForCreate approveBooking(
-            @RequestHeader(value = "X-Sharer-User-Id") Long id,
-            @PathVariable("itemId") Long itemId,
-            @RequestParam("approved") Boolean approve)
+    public BookingDtoForCreate approveBooking(@RequestHeader(value = "X-Sharer-User-Id") Long id,
+                                              @PathVariable("itemId") Long itemId,
+                                              @RequestParam("approved") Boolean approve)
             throws ValidationException, NotFoundException {
         return  bookingService.checkStatus(itemId,approve, id);
     }
 
     @GetMapping(value = "/{itemId}")
     public BookingDtoForCreate getBooking(@RequestHeader(value = "X-Sharer-User-Id") Long userId,
-                                           @PathVariable("itemId") Long itemId) throws NotFoundException {
+                                          @PathVariable("itemId") Long itemId) throws NotFoundException {
         return  bookingService.getById(itemId, userId);
     }
 
     @GetMapping()
     public List<BookingDtoForCreate> getAllUserBooking(@RequestHeader(value = "X-Sharer-User-Id") Long id,
-                                              @RequestParam(value = "state", required = false) String state) throws NotFoundException, StatusException {
+                                                       @RequestParam(value = "state", required = false) String state)
+            throws NotFoundException, StatusException {
         return  bookingService.getAllByUser(id, state);
     }
 
     @GetMapping(value = "/owner")
     public List<BookingDtoForCreate> getBookingToItemOfUser(@RequestHeader(value = "X-Sharer-User-Id") Long id,
-                                              @RequestParam(value = "state", required = false) String state) throws NotFoundException, StatusException {
+                                                            @RequestParam(value = "state", required = false) String state)
+            throws NotFoundException, StatusException {
         return  bookingService.getAllBookingForUserItems(id, state);
     }
 }

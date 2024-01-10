@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Objects;
 
 @Service
-public class BookingService {
+public class BookingService implements BookingServiceInter {
     private BookingRepository bookingRepository;
     private UserRepository userRepository;
     private ItemService itemService;
