@@ -181,14 +181,14 @@ public class ItemService implements ItemServiceInter {
                 }
 
                 if (itemDto.getLastBooking() == null) {
-                    if (booking.getEnd().isBefore(testTime)) {
+                    if (booking.getStart().isBefore(testTime)) {
                         if (booking.getStart().isBefore(LocalDateTime.now())) {
                             itemDto.setLastBooking(booking);
                         }
                     }
                 } else {
-                    if (booking.getEnd().isBefore(testTime)
-                            && booking.getEnd().isAfter(itemDto.getLastBooking().getEnd())) {
+                    if (booking.getStart().isBefore(testTime)
+                            && booking.getStart().isAfter(itemDto.getLastBooking().getStart())) {
                         if (booking.getStart().isBefore(LocalDateTime.now())) {
                             itemDto.setLastBooking(booking);
                         }
