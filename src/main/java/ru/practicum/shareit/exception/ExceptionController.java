@@ -15,6 +15,12 @@ public class ExceptionController {
         return Map.of("Validation exception", 400);
     }
 
+    @ExceptionHandler(StatusException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, String> handleStatus(StatusException e) {
+        return Map.of("error", e.getMessage());
+    }
+
     @ExceptionHandler(NotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public Map<String, Integer> handleNotFound(NotFoundException e) {
